@@ -1,0 +1,27 @@
+name: Build and Push Backend
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t code2013/mern-backend:latest .
+          docker push code2013/mern-backend:latest
+
+      - name: Trigger Deployment Repo
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.DEPLOYMENT_REPO_TOKEN }}
+          repository: yaxx/mern-deployment
+          event-type: deploy-backend

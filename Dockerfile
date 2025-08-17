@@ -1,21 +1,37 @@
-FROM node:18-alpine AS build
+FROM node:20-alpine
+
 WORKDIR /app
 
-# Install dependencies
-COPY server/package*.json tsconfig.json ./
-RUN npm ci
+COPY package*.json ./
+RUN npm install --production
 
-# Copy source and build
-COPY server/ .
-RUN npm run build  # Compiles to dist/
+COPY . .
 
-# Runtime image
-FROM node:18-alpine
-WORKDIR /app
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package*.json ./
-RUN npm ci --only=production
+RUN npm run build
 
-ENV NODE_ENV=production
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/index.js"]
+
+
+
+# FROM node:18-alpine AS build
+# WORKDIR /app
+
+# COPY server/package*.json tsconfig.json ./
+# RUN npm ci
+
+
+# COPY server/ .
+# RUN npm run build  # Compiles to dist/
+
+
+# FROM node:18-alpine
+# WORKDIR /app
+
+# COPY --from=build /app/dist ./dist
+# COPY --from=build /app/package*.json ./
+
+# RUN npm ci --only=production
+
+# ENV NODE_ENV=production
+# CMD ["node", "dist/server.js"]
 
